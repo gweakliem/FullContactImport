@@ -9,9 +9,7 @@ class ImportController < ApplicationController
 		api_key = ENV['FULL_CONTACT_API_KEY']
 
 		#  podio api key / secret / username / password
-		podio_api_key = ENV['PODIO_CLIENT_ID']
-		podio_api_secret = ENV['PODIO_CLIENT_SECRET']
-		Podio.setup(:api_url => 'https://api.podio.com', :api_key => podio_api_key, :api_secret => podio_api_secret)
+		Podio.setup(:api_url => 'https://api.podio.com', :api_key => ENV['PODIO_CLIENT_ID'], :api_secret => ENV['PODIO_CLIENT_SECRET'])
 
 		Podio.client.authenticate_with_credentials(ENV['PODIO_USERNAME'], ENV['PODIO_PASSWORD'])
 

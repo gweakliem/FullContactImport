@@ -1,11 +1,35 @@
+require 'podio'
+require 'fullcontact'
+require 'date'
+def field_values_by_external_id(external_id, options = {})
+      if self.fields.present?
+        field = self.fields.find { |field| field['external_id'] == external_id }
+        if field
+          values = field['values']
+          if options[:simple]
+            values.first['value']
+          else
+            values
+          end
+        else
+          nil
+        end
+      else
+        nil
+      end
+    end
+
+def get_full_contact_field(record,field_id, selector_value, value_field_name)
+  field = record.find{ |i| i[field_id] == selector_value }
+  field ? field[value_field_name]:nil
+end
+
 		# prompt for 
 		#  FC api key
     api_key = ENV['FULL_CONTACT_API_KEY']
 
     #  podio api key / secret / username / password
-    podio_api_key = ENV['PODIO_CLIENT_ID']
-    podio_api_secret = ENV['PODIO_CLIENT_SECRET']
-    Podio.setup(:api_url => 'https://api.podio.com', :api_key => podio_api_key, :api_secret => podio_api_secret)
+    Podio.setup(:api_url => 'https://api.podio.com', :api_key => ENV['PODIO_CLIENT_ID'], :api_secret => ENV['PODIO_CLIENT_SECRET'])
 
     Podio.client.authenticate_with_credentials(ENV['PODIO_USERNAME'], ENV['PODIO_PASSWORD'])
 		# look up podio organizations
@@ -28,7 +52,7 @@
 
 		# pick application
 		#app.name, app.app_id # =>7628956
-		app_id = 7628956
+		app_id = 7961738
 
 		# read 1st page of results from FC
 		FullContact.configure do |config|
@@ -40,23 +64,22 @@
 		# for each page of results
 
 		# for each result, import into podio
-		cr.results.each do |result|
-			Podio::Item.create({
+		#cr.results.each do |result|
+    result = cr.results[0]
+			Podio::Item.create(app_id,{
 				:fields => {
-          {"type"=>"text",
-      "field_id"=>59156200,
-      "label"=>"Full Name",
-      "values"=>[{"value"=>cr.contact.name.given_name + " " + cr.contact.name.family_name}],
-      "config"=>
-       {"settings"=>{"size"=>"small"}, "mapping"=>nil, "label"=>"Full Name"},
-      "external_id"=>"full-name"},
-     {"type"=>"text",
-      "field_id"=>59156201,
-      "label"=>"Title",
-      "values"=>[{"value"=>cr.contact.organizations.select{ |i| i[:is_primary] == true }.title}],
-      "config"=>
-       {"settings"=>{"size"=>"small"}, "mapping"=>nil, "label"=>"Title"},
-      "external_id"=>"title"}          
-        }
+          'full-name' => result.contact.name.given_name + " " + result.contact.name.family_name,
+          'title'=> get_full_contact_field(result.contact.organizations,:is_primary,true,:title),
+          'company'=>get_full_contact_field(result.contact.organizations,:is_primary,true,:name),
+          'phone'=>get_full_contact_field(result.contact.phone_numbers,:type,"Work",:value),
+          'cell-phone'=>get_full_contact_field(result.contact.phone_numbers,:type,"Mobile",:value),
+          'email'=>get_full_contact_field(result.contact.emails,:type,"Work",:value),
+          'fax'=>get_full_contact_field(result.contact.phone_numbers,:type,"Work Fax",:value),
+          'street-address'=>get_full_contact_field(result.contact.addresses,:type,"Work",:street_address),
+          'city'=>get_full_contact_field(result.contact.addresses,:type, "Work",:locality ),
+          'state'=>get_full_contact_field(result.contact.addresses,:type,"Work",:region),
+          'zip'=>get_full_contact_field(result.contact.addresses,:type,"Work",:postal_code),
+          "date-entered"=> {"start"=>DateTime.now.strftime("%Y-%m-%d %H:%M:%S"),"end"=>DateTime.now.strftime("%Y-%m-%d %H:%M:%S")}
+      }
     })
-    end
+    #end
