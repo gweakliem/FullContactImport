@@ -24,6 +24,7 @@ gem 'jquery-rails'
 
 gem 'podio'
 gem 'fullcontact', '>=0.6.2', :path => '/Users/gweakliem/projects/fullcontact-api-ruby/'
+gem 'geocoder'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'
