@@ -109,7 +109,7 @@ app_id = app.app_id
 # read 1st page of results from FC
 cr = Hashie::Rash.new({:current_page => -1, :total_pages => 0})
 
-# for each page of results
+# for each page of results  
 while cr.current_page < cr.total_pages
   cr = FullContact.card_reader({:page => cr.current_page+1})
 	puts "Starting Full Contact page #{cr.current_page} of #{cr.total_pages}, #{cr.total_records} total records"

@@ -40,5 +40,4 @@ gem 'geocoder'
 
 # To use debugger
 group :development do
-	gem 'debugger'
 end
